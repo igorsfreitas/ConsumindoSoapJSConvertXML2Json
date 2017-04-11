@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Teste Soap</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+	<script src="xml2json.js"></script>
+	<script type="text/javascript">
+
+		var xmlText;
+		var jsonText;
+		var json;
+
+		var x2js = new X2JS();
+		
+		function soapRequest(){
+			var str = "<soapenv:Envelope xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xmlns:xsd='http://www.w3.org/2001/XMLSchema' xmlns:soapenv='http://schemas.xmlsoap.org/soap/envelope/' xmlns:urn='urn:server'>"+
+						"<soapenv:Header/>"+
+							"<soapenv:Body>"+
+								"<urn:alunoResponsavel soapenv:encodingStyle='http://schemas.xmlsoap.org/soap/encoding/'>"+
+									"<cpf xsi:type='xsd:string'>74420887400</cpf>"+
+									"<soap xsi:type='xsd:string'>ba398bdfb59b263e8a3dc717b448a15e</soap>"+
+								"</urn:alunoResponsavel>"+
+							"</soapenv:Body>"+
+						"</soapenv:Envelope>";
+			function createCORSRequest(method, url) { 
+				var xhr = new XMLHttpRequest();
+				if ("withCredentials" in xhr) {
+					xhr.open(method, url, false); 
+				} else if (typeof XDomainRequest != "undefined") { 
+					alert
+					xhr = new XDomainRequest();
+					xhr.open(method, url);
+				} else {
+					console.log("CORS not supported");
+					alert("CORS not supported");
+					xhr = null;
+				} return xhr; 
+			}
+			var xhr = createCORSRequest("POST", "http://sigesweb.com.br/restrito/ws/server.php?wsdl");
+			if(!xhr){ 
+				console.log("XHR issue");
+				return;
+			}
+
+			xhr.onload = function (){ 
+				var results = xhr.responseText;
+				console.log(results);
+				json = x2js.xml_str2json(results);
+				jsonText = JSON.stringify(x2js.xml_str2json(results));
+				console.log(jsonText);
+				imprimirRetornos();
+
+			}
+			xhr.setRequestHeader('Content-Type', 'text/xml'); 
+			xhr.send(str);
+		}
+
+		function imprimirRetornos(){
+			for(var i=1;i<json.Envelope.Body.alunoResponsavelResponse.return.item.length;i++){
+				document.getElementById("retorno").innerHTML += "<br />"+json.Envelope.Body.alunoResponsavelResponse.return.item[i].nome.__text;
+			}
+		}
+
+		
+
+	</script>
+</head>
+<body>
+	<input type="button" value="SOAP Request" onClick="soapRequest()" />
+
+	<h3>Valores</h3>
+	<p id="retorno">
+		
+	</p>
+</body>
+</html>
